@@ -13,17 +13,13 @@ jobs:
       FLUTTER_VERSION: "3.24.5"
 
     steps:
-      # ─────────────────────────────
       # CHECKOUT
-      # ─────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # ─────────────────────────────
       # TOOLCHAIN
-      # ─────────────────────────────
       - name: Install LLVM
         uses: KyleMayes/install-llvm-action@v1
         with:
@@ -41,32 +37,26 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
 
-      # ─────────────────────────────
-      # VCPKG (SÓ O NECESSÁRIO)
-      # ─────────────────────────────
+      # VCPKG (MODO CORRETO)
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: 120deac3062162151622ca4860575a33844ba10b
 
-      - name: Install OPUS only
+      - name: Install dependencies (manifest mode)
         shell: pwsh
         run: |
           $env:VCPKG_DEFAULT_HOST_TRIPLET="x64-windows-static"
-          & "$env:VCPKG_ROOT\vcpkg.exe" install opus --triplet x64-windows-static
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows-static
 
-      # ─────────────────────────────
       # BUILD (MSVC CORRETO)
-      # ─────────────────────────────
       - name: Build RustDesk
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           python build.py --portable --flutter --skip-portable-pack
 
-      # ─────────────────────────────
       # OUTPUT
-      # ─────────────────────────────
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
